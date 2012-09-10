@@ -1,0 +1,12 @@
+layout: english/default.html
+title: Yaşar Arabacı's blog on Programming and Computers
+description: Index page for English posts in Yaşar Arabacı's blog.
+
+<ul class="posts">
+{{range .Posts}}{{if .english}}
+<li id="post_{{.index}}">
+	<span>{{.datetime}}</span>
+	&raquo;
+	<a href="{{relative .url}}">{{html .title}}</a>
+{{end}}{{end}}
+</ul>

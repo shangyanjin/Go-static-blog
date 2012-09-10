@@ -1,0 +1,10 @@
+layout: english/default.html
+
+<link rel="stylesheet" type="text/css" href="{{relative "/highlight.css"}}">
+<h1>{{html .Page.title}}</h1>
+<div id="post">
+  {{.Page.child}}
+</div>
+<hr />
+<h1>Comments</h1>
+{{include "english/disqus.html" }}

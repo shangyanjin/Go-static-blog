@@ -1,0 +1,12 @@
+layout: turkish/default.html
+title: Programlama ve Bilgisayarlar üzerine - Yaşar Arabacı
+description: Yaşar Arabacı kişisel bloğundaki Türkçe makalelerin indeksi.
+
+<ul class="posts">
+{{range .Posts}}{{if .turkish}}
+<li id="post_{{.index}}">
+	<span>{{.datetime}}</span>
+	&raquo;
+	<a href="{{relative .url}}">{{html .title}}</a>
+{{end}}{{end}}
+</ul>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	{{if .Page.description}}
+	<meta name="description" content="{{.Page.description}}">
+	{{end}}
+	<link rel="stylesheet" type="text/css" href="{{ relative "/general.css" }}" />
+    <title>{{.Page.title}}</title>
+  </head>
+  <body>
+	<div class="site">
+		<div class="menu">
+			<a href="{{ relative "/index.html" }}">Anasayfa</a>
+			<a href="{{ relative "/hakkimda.html" }}">Hakkımda</a>
+		</div>
+		<div class="main">
+			{{.Page.child}}
+		</div>
+				<div style="width: 100%;clear:both; font-size:50%; color: #dddddd">43 72 65 73 72 70 67 76 62 61 20 76 66 20 6E 70 75 76 72 69 72 71 2C 20 61 62 67 20 6A 75 72 61 20 67 75 72 65 72 20 76 66 20 61 62 67 75 76 61 74 20 7A 62 65 72 20 67 62 20 6E 71 71 2C 20 6F 68 67 20 6A 75 72 61 20 67 75 72 65 72 20 76 66 20 61 62 67 75 76 61 74 20 79 72 73 67 20 67 62 20 67 6E 78 72 20 6E 6A 6E 6C 2E</div>
+
+	</div>
+  </body>
+</html>

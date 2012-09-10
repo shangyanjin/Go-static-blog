@@ -1,0 +1,25 @@
+layout: english/default.html
+title: Yaşar Arabacı's blog on Programming and Computers
+
+<div style="width:50%; margin:0; border:0; float: left; clear: left">
+<h3>English Blog Posts</h3>
+<ul class="posts">
+{{range .Posts}}{{ if .english}}
+<li id="post_{{.index}}">
+	<span>{{.datetime}}</span>
+	&raquo;
+	<a href="{{relative .url}}">{{html .title}}</a>
+{{end}}{{end}}
+</ul>
+</div>
+<div style="width:50%; margin:0; border:0; float: right; clear:right" lang="tr">
+<h3>Türkçe Yazılar</h3>
+<ul class="posts">
+{{range .Posts}}{{if .turkish}}
+<li id="post_{{.index}}">
+	<span>{{.datetime}}</span>
+	&raquo;
+	<a href="{{relative .url}}">{{html .title}}</a>
+{{end}}{{end}}
+</ul>
+</div>
