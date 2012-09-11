@@ -74,6 +74,7 @@ var (
 	codeBlockRE = *regexp.MustCompile("(?smU)(^{% codeblock lang\\:([^ ]+) %}(.*){% endcodeblock %})")
 	imgRE       = *regexp.MustCompile("{% img (\\S+?) %}")
 	includeRE   = *regexp.MustCompile("(?sU){% include (\\S+?) %}")
+	relativeRE   = *regexp.MustCompile("(?sU){% relative (\\S+?) %}")
 
 	AllPosts  = make(Posts, 0, 128) // cap of 128 seems reasonable.
 	postindex = 0
@@ -199,7 +200,39 @@ func (p Page) ExpandMacros() {
 		}
 		return loadFile(filepath.Join(INCLUDEDIR, m[0][1]))
 	}
+	
+    abs_filename, err := filepath.Abs(p["targetfile"])
+	if err != nil {
+		panic(err.Error())
+	}
+    
+    // find a relative link
+    relative := func(s string) string {
+        m := relativeRE.FindAllStringSubmatch(s, -1)
+        if m == nil {
+            panic("Cannot find submatches in function relative.")
+        }
+        target := m[0][1]
+        if target[0] == byte('/') {
+            localpath := filepath.Join(strings.Split(target[1:], "/")...)
+			targetOnDisk := filepath.Join(DEPLOYDIR, localpath)
+			// take absolute url of targetOnDisk, because it break rel otherwise
+			targetOnDisk, err := filepath.Abs(targetOnDisk)
+			if err != nil {
+				panic(err.Error())
+			}
+			rel, err := filepath.Rel(filepath.Dir(abs_filename), targetOnDisk)
+			if err != nil {
+				panic(err.Error())
+			}
 
+			// turn "\" to "/" on windows, do nothing otherwise
+			return filepath.ToSlash(rel)
+        }
+        return target
+
+    }
+    content = relativeRE.ReplaceAllStringFunc(content, relative)
 	// {% include filename.html %}
 	p["content"] = includeRE.ReplaceAllStringFunc(content, include)
 
@@ -271,24 +304,14 @@ func (p Page) Render() {
 func processPost(path string) {
 	p := loadPage(path)
 
-	if _, ok := p["language"]; !ok {
-		p["language"] = "english"
-	}
+	p["index"] = fmt.Sprintf("%d", postindex)
+	postindex++
 
-	p[p["language"]] = "yes"
-
-	if _, ok := p["layout"]; !ok {
-		p["layout"] = filepath.Join(p["language"], "post.html") // default layout for posts are language/post.html
-	}
 
 	t, err := time.Parse("2006/01/02 15:04", p["datetime"])
 	if err != nil {
 		panic(err.Error())
 	}
-
-	p.ProcessMarkup()
-	p["index"] = fmt.Sprintf("%d", postindex)
-	postindex++
 
 	nameparts := []string{DEPLOYDIR,
 		BLOGURL,
@@ -299,6 +322,18 @@ func processPost(path string) {
 		strings.Replace(p["filename"][len(POSTDIR):], ".markdown", ".html", -1)}
 
 	p["targetfile"] = filepath.Join(nameparts...)
+
+	if _, ok := p["language"]; !ok {
+		p["language"] = "english"
+	}
+
+	p[p["language"]] = "yes"
+
+	if _, ok := p["layout"]; !ok {
+		p["layout"] = filepath.Join(p["language"], "post.html") // default layout for posts are language/post.html
+	}
+
+	p.ProcessMarkup()
 
 	// Save this so that we can link it in index page
 	p["url"] = strings.Join(nameparts[1:], "/")
@@ -328,12 +363,16 @@ func processPosts() {
 
 func processPage(path string) {
 	p := loadPage(path)
+    var needsmarkup = false
 	if filepath.Ext(path) == ".markdown" {
-		p.ProcessMarkup()
+        needsmarkup = true
 		path = path[:len(path)-len(".markdown")] + ".html"
 	}
 	d := filepath.Join(DEPLOYDIR, filepath.Dir(path[len(SITEDIR):]))
 	p["targetfile"] = filepath.Join(d, filepath.Base(path))
+    if needsmarkup {
+        p.ProcessMarkup()
+    }
 	p.Render()
 	if err := os.MkdirAll(d, os.ModePerm); err != nil {
 		panic(err.Error())
